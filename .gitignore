@@ -1,1 +1,5 @@
 node_modules
+src/**/*
+!src/.gitpush
+dist/**/*
+!dist/.gitpush
