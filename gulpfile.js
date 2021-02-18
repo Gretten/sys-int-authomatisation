@@ -3,7 +3,8 @@ const imagemin                = require('gulp-imagemin');
 const imageminJpegRecompress  = require('imagemin-jpeg-recompress');
 const pngquant                = require('imagemin-pngquant');
 const cheerio                 = require('gulp-cheerio');
-
+let flatten                 = require('gulp-flatten');
+let es                      = require('event-stream');
 
 
 const imageMin = () => {
@@ -45,7 +46,25 @@ const cleanHrefs = () => {
         .pipe(dest('dist'));
 };
 
-exports.default = parallel(imageMin, cleanHrefs);
+const formTheProjectStructure = (cb) => {
+        const types = {
+            img: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'ico'],
+            js: ['js'],
+            css: ['css'],
+            fonts: ['otf', 'ttf', 'html'],
+        }
+
+        for(type in types) {
+            types[type].forEach(el => {
+                src(`src/**/*.${el}`)
+                    .pipe(flatten())
+                    .pipe(dest(`dist/${type}`));
+                })
+            }
+        return cb()
+}
+
+exports.default = series(formTheProjectStructure);
 
 /*
 1. there are two methods of composing tasks: series and parallel. The metods can be nested into each other. 
