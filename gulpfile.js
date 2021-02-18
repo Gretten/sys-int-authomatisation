@@ -1,10 +1,45 @@
+/*
+todo:
+1. get the path handler outta this file
+2. add form action attr cleaner
+3. compose functions
+*/
+
+
 const { src, dest, series, parallel }   = require('gulp');
-const imagemin                = require('gulp-imagemin');
-const imageminJpegRecompress  = require('imagemin-jpeg-recompress');
-const pngquant                = require('imagemin-pngquant');
-const cheerio                 = require('gulp-cheerio');
-let flatten                 = require('gulp-flatten');
-let es                      = require('event-stream');
+const imagemin                          = require('gulp-imagemin');
+const imageminJpegRecompress            = require('imagemin-jpeg-recompress');
+const pngquant                          = require('imagemin-pngquant');
+const cheerio                           = require('gulp-cheerio');
+const flatten                           = require('gulp-flatten');
+const entities                          = require('gulp-html-entities');
+
+
+function pathHandler() {
+    let attrs = this.attribs;
+    let check = /\.(jpg|png|jpeg|gif|svg)/gi;
+    let reg = /[^\/]*(\.jpg|\.jpeg|\.png|\.gif|\.svg|\.css|\.js)/gi;
+    if (attrs.src) {
+
+        if (~attrs.src.indexOf('.js')) {
+            let clean = attrs.src.match(reg)[0];
+            this.attribs.src = 'js/' + clean;
+        } else if (~attrs.src.search(check)) {
+            let clean = attrs.src.match(reg)[0];
+            this.attribs.src = 'img/' + clean;
+        } else {
+            console.log('Ошибка в ' + attrs.src)
+        }
+
+    } else if (attrs.href) {
+        if (~attrs.href.indexOf('.css')) {
+            let clean = attrs.href.match(reg)[0];
+            this.attribs.href = 'css/' + clean;
+        } else {
+            console.log('Ошибка в ' + attrs.href)
+        }
+    }
+}
 
 
 const imageMin = () => {
@@ -51,7 +86,9 @@ const formTheProjectStructure = (cb) => {
             img: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'ico'],
             js: ['js'],
             css: ['css'],
-            fonts: ['otf', 'ttf', 'html'],
+            fonts: ['otf', 'ttf'],
+            html: ['html'],
+            video: ['mp4'],
         }
 
         for(type in types) {
@@ -64,7 +101,31 @@ const formTheProjectStructure = (cb) => {
         return cb()
 }
 
-exports.default = series(formTheProjectStructure);
+const links = () => {
+    return src(['src/index.html'])
+        .pipe(cheerio(function($) {
+            $('img').each(function() {
+                pathHandler.call(this);
+            });
+            $('script').each(function() {
+                pathHandler.call(this);
+            });
+            $('link').each(function() {
+                pathHandler.call(this);
+            });
+            $('a').each(function() {
+                this.attribs.href = "";
+            });
+            $('form').each(function() {
+                this.attribs.action = "";
+            });
+        }))
+        .pipe(entities('decode'))
+        .pipe(dest('dist/'));
+}
+
+
+exports.default = series(links);
 
 /*
 1. there are two methods of composing tasks: series and parallel. The metods can be nested into each other. 

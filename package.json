@@ -15,6 +15,7 @@
   "dependencies": {
     "gulp-cheerio": "^1.0.0",
     "gulp-flatten": "^0.4.0",
+    "gulp-html-entities": "0.0.3",
     "gulp-imagemin": "^7.1.0",
     "imagemin-jpeg-recompress": "^7.0.0",
     "imagemin-pngquant": "^9.0.1"
