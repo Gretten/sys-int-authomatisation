@@ -67,7 +67,7 @@ const imageMin = () => {
 }
 
 const cleanHrefs = () => {
-    return src(['dist/index.html'])
+    return src(['src/index.html']) //3
         .pipe(
             cheerio(function($, file) {
                 $('a').each(function() {
@@ -101,8 +101,8 @@ const formTheProjectStructure = (cb) => {
         return cb()
 }
 
-const links = () => {
-    return src(['src/index.html'])
+const links = () => { //2
+    return src(['src/temp/index.html'])
         .pipe(cheerio(function($) {
             $('img').each(function() {
                 pathHandler.call(this);
@@ -121,11 +121,22 @@ const links = () => {
             });
         }))
         .pipe(entities('decode'))
-        .pipe(dest('dist/'));
+        .pipe(dest('src/'));
+}
+
+const cleanFormAction = () => { // 1
+    return src(['src/index.html'])
+        .pipe(cheerio(function($) {
+            $('form').each(function() {
+                this.attribs.action = " ";
+            });
+        }))
+        .pipe(entities('decode'))
+        .pipe(dest('src/temp/'));
 }
 
 
-exports.default = series(links);
+exports.default = series(cleanFormAction);
 
 /*
 1. there are two methods of composing tasks: series and parallel. The metods can be nested into each other. 
