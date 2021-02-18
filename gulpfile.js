@@ -1,8 +1,6 @@
 /*
 todo:
-1. get the path handler outta this file
-2. add form action attr cleaner
-3. compose functions
+- get the path handler outta this file
 */
 
 
@@ -78,6 +76,7 @@ const cleanHrefs = () => {
                     
                 })
         }))
+        .pipe(entities('decode'))
         .pipe(dest('dist'));
 };
 
@@ -136,7 +135,11 @@ const cleanFormAction = () => { // 1
 }
 
 
-exports.default = series(cleanFormAction);
+exports.default = series(
+    formTheProjectStructure,
+    series(cleanFormAction, links, cleanHrefs),
+    imageMin
+);
 
 /*
 1. there are two methods of composing tasks: series and parallel. The metods can be nested into each other. 
